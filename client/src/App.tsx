@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import LargeOptionTrades from "./pages/LargeOptionTrades";
 import PaperTrading from "./pages/PaperTrading";
 import Markets from "./pages/Markets";
+import TickerView from "./pages/TickerView";
 
 function App() {
   const { user, isLoading } = useUser();
@@ -37,6 +38,7 @@ function App() {
         <Route path="/large-options" component={LargeOptionTrades} />
         <Route path="/paper-trading" component={PaperTrading} />
         <Route path="/markets" component={Markets} />
+        <Route path="/ticker/:symbol" component={TickerView} />
       </Switch>
       <Toaster />
     </QueryClientProvider>

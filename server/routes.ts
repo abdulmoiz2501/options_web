@@ -457,6 +457,82 @@ export function registerRoutes(app: Express): Server {
   });
 
 
+  // Get ticker information
+  app.get("/api/ticker/:symbol/info", async (req, res) => {
+    try {
+      // Mock data - Replace with actual API integration
+      const companyData = {
+        name: "Apple Inc.",
+        description: "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide. The company offers iPhone, a line of smartphones; Mac, a line of personal computers; iPad, a line of multi-purpose tablets; and wearables, home, and accessories comprising AirPods, Apple TV, Apple Watch, Beats products, and HomePod.",
+        sector: "Technology",
+        industry: "Consumer Electronics",
+        employees: 164000,
+        ceo: "Tim Cook",
+        website: "https://www.apple.com"
+      };
+
+      res.json(companyData);
+    } catch (error) {
+      res.status(500).send("Error fetching company information");
+    }
+  });
+
+  // Get ticker fundamentals
+  app.get("/api/ticker/:symbol/fundamentals", async (req, res) => {
+    try {
+      // Mock data - Replace with actual API integration
+      const fundamentals = {
+        marketCap: 3000000000000,
+        peRatio: 28.5,
+        eps: 6.15,
+        dividend: 0.65,
+        beta: 1.2,
+        avgVolume: 80000000
+      };
+
+      res.json(fundamentals);
+    } catch (error) {
+      res.status(500).send("Error fetching fundamentals");
+    }
+  });
+
+  // Get ticker earnings
+  app.get("/api/ticker/:symbol/earnings", async (req, res) => {
+    try {
+      // Mock data - Replace with actual API integration
+      const earnings = [
+        {
+          date: "2024-01-01",
+          expectedEPS: 1.45,
+          actualEPS: 1.52,
+          surprise: 4.83
+        },
+        {
+          date: "2023-10-01",
+          expectedEPS: 1.39,
+          actualEPS: 1.46,
+          surprise: 5.04
+        },
+        {
+          date: "2023-07-01",
+          expectedEPS: 1.32,
+          actualEPS: 1.28,
+          surprise: -3.03
+        },
+        {
+          date: "2023-04-01",
+          expectedEPS: 1.25,
+          actualEPS: 1.35,
+          surprise: 8.00
+        }
+      ];
+
+      res.json(earnings);
+    } catch (error) {
+      res.status(500).send("Error fetching earnings data");
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

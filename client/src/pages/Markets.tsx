@@ -121,36 +121,37 @@ export default function Markets() {
                     <ScrollArea className="h-[300px] pr-4">
                       <div className="space-y-2">
                         {trendingSymbols?.map((symbol) => (
-                          <motion.div
-                            key={symbol.symbol}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors"
-                          >
-                            <div>
-                              <div className="font-medium">${symbol.symbol}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {symbol.name}
+                          <Link key={symbol.symbol} href={`/ticker/${symbol.symbol}`}>
+                            <motion.div
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                            >
+                              <div>
+                                <div className="font-medium">${symbol.symbol}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {symbol.name}
+                                </div>
                               </div>
-                            </div>
-                            <div className="text-right">
-                              <div
-                                className={`font-medium ${
-                                  symbol.change >= 0 ? "text-green-500" : "text-red-500"
-                                }`}
-                              >
-                                {symbol.change >= 0 ? (
-                                  <TrendingUp className="inline h-4 w-4 mr-1" />
-                                ) : (
-                                  <TrendingDown className="inline h-4 w-4 mr-1" />
-                                )}
-                                {symbol.change}%
+                              <div className="text-right">
+                                <div
+                                  className={`font-medium ${
+                                    symbol.change >= 0 ? "text-green-500" : "text-red-500"
+                                  }`}
+                                >
+                                  {symbol.change >= 0 ? (
+                                    <TrendingUp className="inline h-4 w-4 mr-1" />
+                                  ) : (
+                                    <TrendingDown className="inline h-4 w-4 mr-1" />
+                                  )}
+                                  {symbol.change}%
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {symbol.mentions} mentions
+                                </div>
                               </div>
-                              <div className="text-sm text-muted-foreground">
-                                {symbol.mentions} mentions
-                              </div>
-                            </div>
-                          </motion.div>
+                            </motion.div>
+                          </Link>
                         ))}
                       </div>
                     </ScrollArea>
