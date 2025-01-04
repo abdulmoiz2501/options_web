@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { posts, optionsFlow, users, tradingChallenges, challengeParticipants } from "@db/schema";
+import { posts, optionsFlow, users, tradingChallenges, challengeParticipants, paperTradingAccounts, paperTradingPositions } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import fetch from "node-fetch";
 
@@ -240,6 +240,129 @@ export function registerRoutes(app: Express): Server {
       res.json(participant);
     } catch (error) {
       res.status(500).send("Error joining challenge");
+    }
+  });
+
+  // Get paper trading account details
+  app.get("/api/paper-trading/account", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      let [account] = await db
+        .select()
+        .from(paperTradingAccounts)
+        .where(eq(paperTradingAccounts.userId, req.user.id))
+        .limit(1);
+
+      if (!account) {
+        // Create account if it doesn't exist
+        [account] = await db
+          .insert(paperTradingAccounts)
+          .values({
+            userId: req.user.id,
+            balance: 10000, //Give initial balance
+          })
+          .returning();
+      }
+
+      res.json(account);
+    } catch (error) {
+      res.status(500).send("Error fetching account");
+    }
+  });
+
+  // Get paper trading positions
+  app.get("/api/paper-trading/positions", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const positions = await db
+        .select({
+          id: paperTradingPositions.id,
+          symbol: paperTradingPositions.symbol,
+          optionType: paperTradingPositions.optionType,
+          quantity: paperTradingPositions.quantity,
+          entryPrice: paperTradingPositions.entryPrice,
+          strikePrice: paperTradingPositions.strikePrice,
+          expiryDate: paperTradingPositions.expiryDate,
+          status: paperTradingPositions.status,
+          pnl: paperTradingPositions.pnl,
+          riskLevel: paperTradingPositions.riskLevel,
+        })
+        .from(paperTradingPositions)
+        .innerJoin(
+          paperTradingAccounts,
+          eq(paperTradingPositions.accountId, paperTradingAccounts.id)
+        )
+        .where(eq(paperTradingAccounts.userId, req.user.id))
+        .where(eq(paperTradingPositions.status, 'open'));
+
+      res.json(positions);
+    } catch (error) {
+      res.status(500).send("Error fetching positions");
+    }
+  });
+
+  // Place new paper trade
+  app.post("/api/paper-trading/trade", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [account] = await db
+        .select()
+        .from(paperTradingAccounts)
+        .where(eq(paperTradingAccounts.userId, req.user.id))
+        .limit(1);
+
+      if (!account) {
+        return res.status(404).send("Trading account not found");
+      }
+
+      const { symbol, amount, type, expiry, strike } = req.body;
+
+      // Check if user has enough balance
+      if (account.balance < amount) {
+        return res.status(400).send("Insufficient funds");
+      }
+
+      // Calculate risk level
+      const maxLoss = type === 'call' ? amount : strike * 100;
+      const riskLevel = maxLoss > 5000 ? 'HIGH' : maxLoss > 2000 ? 'MEDIUM' : 'LOW';
+
+      // Create new position
+      const [position] = await db
+        .insert(paperTradingPositions)
+        .values({
+          accountId: account.id,
+          symbol,
+          optionType: type,
+          quantity: Math.floor(amount / strike),
+          entryPrice: strike,
+          strikePrice: strike,
+          expiryDate: new Date(expiry),
+          status: 'open',
+          pnl: 0,
+          riskLevel,
+        })
+        .returning();
+
+      // Update account balance
+      await db
+        .update(paperTradingAccounts)
+        .set({
+          balance: account.balance - amount,
+        })
+        .where(eq(paperTradingAccounts.id, account.id));
+
+      res.json(position);
+    } catch (error) {
+      res.status(500).send("Error executing trade");
     }
   });
 

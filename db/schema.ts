@@ -117,6 +117,47 @@ export const challengeTradesRelations = relations(challengeTrades, ({ one }) => 
   }),
 }));
 
+export const paperTradingAccounts = pgTable("paper_trading_accounts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  balance: numeric("balance").notNull().default("100000"), // Default $100k
+  totalPnl: numeric("total_pnl").default("0"),
+  dailyPnl: numeric("daily_pnl").default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastResetAt: timestamp("last_reset_at").defaultNow(),
+});
+
+export const paperTradingPositions = pgTable("paper_trading_positions", {
+  id: serial("id").primaryKey(),
+  accountId: integer("account_id").references(() => paperTradingAccounts.id).notNull(),
+  symbol: text("symbol").notNull(),
+  optionType: text("option_type").notNull(), // 'call' or 'put'
+  quantity: integer("quantity").notNull(),
+  entryPrice: numeric("entry_price").notNull(),
+  strikePrice: numeric("strike_price").notNull(),
+  expiryDate: timestamp("expiry_date").notNull(),
+  status: text("status").notNull().default("open"), // open, closed
+  openedAt: timestamp("opened_at").defaultNow(),
+  closedAt: timestamp("closed_at"),
+  closingPrice: numeric("closing_price"),
+  pnl: numeric("pnl").default("0"),
+  riskLevel: text("risk_level").notNull(), // low, medium, high
+});
+
+export const paperTradingAccountsRelations = relations(paperTradingAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [paperTradingAccounts.userId],
+    references: [users.id],
+  }),
+  positions: many(paperTradingPositions),
+}));
+
+export const paperTradingPositionsRelations = relations(paperTradingPositions, ({ one }) => ({
+  account: one(paperTradingAccounts, {
+    fields: [paperTradingPositions.accountId],
+    references: [paperTradingAccounts.id],
+  }),
+}));
 
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
