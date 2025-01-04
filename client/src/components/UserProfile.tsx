@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, TrendingUp, Clock, DollarSign, Users, Award, Camera } from "lucide-react";
+import { Trophy, Target, TrendingUp, Clock, DollarSign, Users, Award, Camera, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
 type Achievement = {
@@ -48,6 +49,7 @@ type ProfileFormData = {
 export function UserProfile() {
   const { user } = useUser();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const form = useForm<ProfileFormData>({
     defaultValues: {
@@ -119,6 +121,16 @@ export function UserProfile() {
 
   return (
     <div className="container max-w-4xl mx-auto py-8">
+      <div className="flex items-center mb-6">
+        <Button 
+          variant="ghost" 
+          className="mr-4"
+          onClick={() => setLocation("/")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+      </div>
       <div className="mb-8 text-center">
         <div className="relative inline-block">
           <Avatar className="w-24 h-24 mx-auto mb-4">
