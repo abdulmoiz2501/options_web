@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
 import LargeOptionTrades from "./pages/LargeOptionTrades";
+import PaperTrading from "./pages/PaperTrading";
 
 function App() {
   const { user, isLoading } = useUser();
@@ -33,6 +34,7 @@ function App() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/large-options" component={LargeOptionTrades} />
+        <Route path="/paper-trading" component={PaperTrading} />
       </Switch>
       <Toaster />
     </QueryClientProvider>
