@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { posts, optionsFlow, users, tradingChallenges, challengeParticipants, paperTradingAccounts, paperTradingPositions } from "@db/schema";
+import { posts, optionsFlow, users, tradingChallenges, challengeParticipants, paperTradingAccounts, paperTradingPositions, achievements, userAchievements } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import fetch from "node-fetch";
 
@@ -530,6 +530,73 @@ export function registerRoutes(app: Express): Server {
       res.json(earnings);
     } catch (error) {
       res.status(500).send("Error fetching earnings data");
+    }
+  });
+
+  // User profile routes
+  app.get("/api/user/profile", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [userProfile] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, req.user.id))
+        .limit(1);
+
+      res.json(userProfile);
+    } catch (error) {
+      res.status(500).send("Error fetching user profile");
+    }
+  });
+
+  app.put("/api/user/profile", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [updatedProfile] = await db
+        .update(users)
+        .set({
+          fullName: req.body.fullName,
+          bio: req.body.bio,
+          email: req.body.email,
+          tradingStyle: req.body.tradingStyle,
+          riskTolerance: req.body.riskTolerance,
+          experienceLevel: req.body.experienceLevel,
+          preferredMarkets: req.body.preferredMarkets,
+          tradingGoals: req.body.tradingGoals,
+          dailyProfitTarget: req.body.dailyProfitTarget,
+          maxDrawdown: req.body.maxDrawdown,
+        })
+        .where(eq(users.id, req.user.id))
+        .returning();
+
+      res.json(updatedProfile);
+    } catch (error) {
+      res.status(500).send("Error updating user profile");
+    }
+  });
+
+  app.get("/api/user/achievements", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const userAchievementsList = await db.query.userAchievements.findMany({
+        where: eq(userAchievements.userId, req.user.id),
+        with: {
+          achievement: true,
+        },
+      });
+
+      res.json(userAchievementsList);
+    } catch (error) {
+      res.status(500).send("Error fetching achievements");
     }
   });
 

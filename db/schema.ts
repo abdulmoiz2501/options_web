@@ -1,18 +1,40 @@
-import { pgTable, text, serial, integer, timestamp, json, boolean, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, json, boolean, numeric, varchar, enum as pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
+
+// Enums for trading preferences
+export const tradingStyleEnum = pgEnum('trading_style', ['day_trader', 'swing_trader', 'position_trader', 'scalper']);
+export const riskToleranceEnum = pgEnum('risk_tolerance', ['conservative', 'moderate', 'aggressive']);
+export const experienceLevelEnum = pgEnum('experience_level', ['beginner', 'intermediate', 'advanced', 'expert']);
+export const preferredMarketsEnum = pgEnum('preferred_markets', ['stocks', 'options', 'crypto', 'futures', 'forex']);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
+  email: varchar("email", { length: 255 }).unique(),
+  fullName: text("full_name"),
   bio: text("bio"),
   avatar: text("avatar"),
+  tradingStyle: tradingStyleEnum("trading_style"),
+  riskTolerance: riskToleranceEnum("risk_tolerance"),
+  experienceLevel: experienceLevelEnum("experience_level"),
+  preferredMarkets: json("preferred_markets").$type<string[]>(),
+  favoriteSymbols: json("favorite_symbols").$type<string[]>(),
+  tradingGoals: text("trading_goals"),
+  dailyProfitTarget: numeric("daily_profit_target"),
+  maxDrawdown: numeric("max_drawdown"),
   createdAt: timestamp("created_at").defaultNow(),
   totalPnl: numeric("total_pnl").default("0"),
   weeklyPnl: numeric("weekly_pnl").default("0"),
   winRate: numeric("win_rate").default("0"),
   tradesCount: integer("trades_count").default(0),
+  averagePositionSize: numeric("average_position_size").default("0"),
+  averageHoldingTime: numeric("average_holding_time").default("0"),
+  bestTrade: numeric("best_trade").default("0"),
+  worstTrade: numeric("worst_trade").default("0"),
+  badges: json("badges").$type<string[]>(),
+  achievements: json("achievements").$type<{ name: string, unlockedAt: string }[]>(),
 });
 
 export const posts = pgTable("posts", {
@@ -168,3 +190,38 @@ export const insertChallengeSchema = createInsertSchema(tradingChallenges);
 export const selectChallengeSchema = createSelectSchema(tradingChallenges);
 export type InsertChallenge = typeof tradingChallenges.$inferInsert;
 export type SelectChallenge = typeof tradingChallenges.$inferSelect;
+
+
+// Additional schema for user achievements
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  criteria: json("criteria").notNull(),
+  icon: text("icon").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations for achievements
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  achievementId: integer("achievement_id").references(() => achievements.id).notNull(),
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+  progress: json("progress"),
+});
+
+export const achievementsRelations = relations(achievements, ({ many }) => ({
+  userAchievements: many(userAchievements),
+}));
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, {
+    fields: [userAchievements.userId],
+    references: [users.id],
+  }),
+  achievement: one(achievements, {
+    fields: [userAchievements.achievementId],
+    references: [achievements.id],
+  }),
+}));
