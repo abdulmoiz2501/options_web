@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpCircle, ArrowDownCircle, TrendingUp, Activity } from "lucide-react";
+import { TrendingUp, Activity, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
@@ -64,35 +64,19 @@ export function MarketData() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Trending</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {mockMarketData.trending.map((stock, index) => (
-                <motion.div
-                  key={stock.symbol}
-                  className="flex items-center justify-between"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <span className="font-medium">{stock.symbol}</span>
-                  <span
-                    className={
-                      stock.change.startsWith("+")
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }
-                  >
-                    {stock.change}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
+        <Card className="hover:bg-accent/50 transition-colors">
+          <Link href="/challenges">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Challenges</CardTitle>
+              <Trophy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Compete</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Join trading competitions
+              </p>
+            </CardContent>
+          </Link>
         </Card>
       </motion.div>
 

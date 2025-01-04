@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { db } from "@db";
-import { posts, optionsFlow, users } from "@db/schema";
+import { posts, optionsFlow, users, tradingChallenges, challengeParticipants } from "@db/schema";
 import { desc, eq } from "drizzle-orm";
 import fetch from "node-fetch";
 
@@ -127,6 +127,119 @@ export function registerRoutes(app: Express): Server {
       res.json(leaderboardUsers);
     } catch (error) {
       res.status(500).send("Error fetching leaderboard data");
+    }
+  });
+
+  // Get challenges
+  app.get("/api/challenges", async (req, res) => {
+    try {
+      const challenges = await db.query.tradingChallenges.findMany({
+        with: {
+          creator: true,
+          participants: true,
+        },
+        orderBy: desc(tradingChallenges.createdAt),
+      });
+      res.json(challenges);
+    } catch (error) {
+      res.status(500).send("Error fetching challenges");
+    }
+  });
+
+  // Get single challenge
+  app.get("/api/challenges/:id", async (req, res) => {
+    try {
+      const [challenge] = await db.query.tradingChallenges.findMany({
+        where: eq(tradingChallenges.id, parseInt(req.params.id)),
+        with: {
+          creator: true,
+          participants: {
+            with: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      if (!challenge) {
+        return res.status(404).send("Challenge not found");
+      }
+
+      res.json(challenge);
+    } catch (error) {
+      res.status(500).send("Error fetching challenge");
+    }
+  });
+
+  // Create challenge
+  app.post("/api/challenges", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [challenge] = await db
+        .insert(tradingChallenges)
+        .values({
+          creatorId: req.user.id,
+          title: req.body.title,
+          description: req.body.description,
+          startDate: req.body.startDate,
+          endDate: req.body.endDate,
+          initialBalance: req.body.initialBalance,
+          maxLeverage: req.body.maxLeverage,
+          allowedInstruments: req.body.allowedInstruments,
+          minParticipants: req.body.minParticipants,
+          maxParticipants: req.body.maxParticipants,
+        })
+        .returning();
+
+      res.json(challenge);
+    } catch (error) {
+      res.status(500).send("Error creating challenge");
+    }
+  });
+
+  // Join challenge
+  app.post("/api/challenges/:id/join", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const [challenge] = await db
+        .select()
+        .from(tradingChallenges)
+        .where(eq(tradingChallenges.id, parseInt(req.params.id)))
+        .limit(1);
+
+      if (!challenge) {
+        return res.status(404).send("Challenge not found");
+      }
+
+      // Check if user is already participating
+      const [existingParticipant] = await db
+        .select()
+        .from(challengeParticipants)
+        .where(eq(challengeParticipants.userId, req.user.id))
+        .limit(1);
+
+      if (existingParticipant) {
+        return res.status(400).send("Already participating in this challenge");
+      }
+
+      const [participant] = await db
+        .insert(challengeParticipants)
+        .values({
+          challengeId: challenge.id,
+          userId: req.user.id,
+          currentBalance: challenge.initialBalance,
+        })
+        .returning();
+
+      res.json(participant);
+    } catch (error) {
+      res.status(500).send("Error joining challenge");
     }
   });
 
