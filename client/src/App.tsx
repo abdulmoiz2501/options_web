@@ -19,7 +19,12 @@ function App() {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthPage />
+        <Toaster />
+      </QueryClientProvider>
+    );
   }
 
   return (
