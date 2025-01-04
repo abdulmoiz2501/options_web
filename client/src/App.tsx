@@ -6,6 +6,7 @@ import { useUser } from "./hooks/use-user";
 import { Loader2 } from "lucide-react";
 import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
+import LargeOptionTrades from "./pages/LargeOptionTrades";
 
 function App() {
   const { user, isLoading } = useUser();
@@ -31,6 +32,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/large-options" component={LargeOptionTrades} />
       </Switch>
       <Toaster />
     </QueryClientProvider>
