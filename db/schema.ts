@@ -12,7 +12,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
-  email: varchar("email", { length: 255 }).unique(),
+  email: varchar("email", { length: 255 }),
   fullName: text("full_name"),
   bio: text("bio"),
   avatar: text("avatar"),
@@ -34,8 +34,42 @@ export const users = pgTable("users", {
   bestTrade: numeric("best_trade").default("0"),
   worstTrade: numeric("worst_trade").default("0"),
   badges: json("badges").$type<string[]>(),
-  achievements: json("achievements").$type<{ name: string, unlockedAt: string }[]>(),
+  achievements: json("achievements").$type<{ name: string; unlockedAt: string }[]>(),
 });
+
+// Create Zod schema for user registration/login
+const baseUserSchema = createInsertSchema(users, {
+  id: undefined,
+  email: undefined,
+  fullName: undefined,
+  bio: undefined,
+  avatar: undefined,
+  tradingStyle: undefined,
+  riskTolerance: undefined,
+  experienceLevel: undefined,
+  preferredMarkets: undefined,
+  favoriteSymbols: undefined,
+  tradingGoals: undefined,
+  dailyProfitTarget: undefined,
+  maxDrawdown: undefined,
+  createdAt: undefined,
+  totalPnl: undefined,
+  weeklyPnl: undefined,
+  winRate: undefined,
+  tradesCount: undefined,
+  averagePositionSize: undefined,
+  averageHoldingTime: undefined,
+  bestTrade: undefined,
+  worstTrade: undefined,
+  badges: undefined,
+  achievements: undefined,
+});
+
+// Create the insert schema with only required fields for registration/login
+export const insertUserSchema = baseUserSchema;
+export const selectUserSchema = createSelectSchema(users);
+export type InsertUser = typeof users.$inferInsert;
+export type SelectUser = typeof users.$inferSelect;
 
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
@@ -181,10 +215,6 @@ export const paperTradingPositionsRelations = relations(paperTradingPositions, (
   }),
 }));
 
-export const insertUserSchema = createInsertSchema(users);
-export const selectUserSchema = createSelectSchema(users);
-export type InsertUser = typeof users.$inferInsert;
-export type SelectUser = typeof users.$inferSelect;
 
 export const insertChallengeSchema = createInsertSchema(tradingChallenges);
 export const selectChallengeSchema = createSelectSchema(tradingChallenges);
