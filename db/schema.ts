@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, json, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, json, boolean, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -9,9 +9,10 @@ export const users = pgTable("users", {
   bio: text("bio"),
   avatar: text("avatar"),
   createdAt: timestamp("created_at").defaultNow(),
-  riskTolerance: text("risk_tolerance"),
-  investmentStyle: text("investment_style"),
-  preferredSectors: json("preferred_sectors"),
+  totalPnl: numeric("total_pnl").default("0"),
+  weeklyPnl: numeric("weekly_pnl").default("0"),
+  winRate: numeric("win_rate").default("0"),
+  tradesCount: integer("trades_count").default(0),
 });
 
 export const posts = pgTable("posts", {
@@ -35,36 +36,13 @@ export const optionsFlow = pgTable("options_flow", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const tradingStrategies = pgTable("trading_strategies", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  riskLevel: text("risk_level").notNull(),
-  timeHorizon: text("time_horizon").notNull(),
-  indicators: json("indicators").notNull(),
-  entryConditions: json("entry_conditions").notNull(),
-  exitConditions: json("exit_conditions").notNull(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
-  tradingStrategies: many(tradingStrategies),
 }));
 
 export const postsRelations = relations(posts, ({ one }) => ({
   user: one(users, {
     fields: [posts.userId],
-    references: [users.id],
-  }),
-}));
-
-export const tradingStrategiesRelations = relations(tradingStrategies, ({ one }) => ({
-  user: one(users, {
-    fields: [tradingStrategies.userId],
     references: [users.id],
   }),
 }));

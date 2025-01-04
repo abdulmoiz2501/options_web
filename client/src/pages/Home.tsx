@@ -4,7 +4,7 @@ import { OptionsFlow } from "@/components/OptionsFlow";
 import { StockChart } from "@/components/StockChart";
 import { SocialFeed } from "@/components/SocialFeed";
 import { MarketData } from "@/components/MarketData";
-import { StrategyRecommendations } from "@/components/StrategyRecommendations";
+import { Leaderboard } from "@/components/Leaderboard";
 
 export default function Home() {
   const { user, logout } = useUser();
@@ -34,7 +34,7 @@ export default function Home() {
               <OptionsFlow />
             </div>
             <div className="lg:col-span-4 space-y-8">
-              <StrategyRecommendations />
+              <Leaderboard />
               <SocialFeed />
             </div>
           </div>
