@@ -8,7 +8,7 @@ import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
 import LargeOptionTrades from "./pages/LargeOptionTrades";
 import PaperTrading from "./pages/PaperTrading";
-import Challenges from "./pages/Challenges";
+import Markets from "./pages/Markets";
 
 function App() {
   const { user, isLoading } = useUser();
@@ -36,7 +36,7 @@ function App() {
         <Route path="/" component={Home} />
         <Route path="/large-options" component={LargeOptionTrades} />
         <Route path="/paper-trading" component={PaperTrading} />
-        <Route path="/challenges" component={Challenges} />
+        <Route path="/markets" component={Markets} />
       </Switch>
       <Toaster />
     </QueryClientProvider>

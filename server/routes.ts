@@ -391,6 +391,72 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get market news
+  app.get("/api/markets/news", async (_req, res) => {
+    try {
+      // Mock data - Replace with actual API calls to investing.com and marketwatch.com
+      const news = [
+        {
+          id: "1",
+          title: "Markets Rally on Fed Rate Decision",
+          description: "U.S. stocks surge as Federal Reserve signals potential rate cuts in 2024",
+          source: "investing.com",
+          url: "https://investing.com/news/1",
+          timestamp: new Date().toISOString(),
+        },
+        // Add more mock news items
+      ];
+
+      res.json(news);
+    } catch (error) {
+      res.status(500).send("Error fetching market news");
+    }
+  });
+
+  // Get trending symbols
+  app.get("/api/markets/trending", async (_req, res) => {
+    try {
+      // Mock data - Replace with actual API integration
+      const trending = [
+        {
+          symbol: "AAPL",
+          name: "Apple Inc.",
+          change: 2.5,
+          volume: 1000000,
+          price: 185.75,
+          mentions: 1250,
+        },
+        // Add more mock symbols
+      ];
+
+      res.json(trending);
+    } catch (error) {
+      res.status(500).send("Error fetching trending symbols");
+    }
+  });
+
+  // Get earnings calendar
+  app.get("/api/markets/earnings", async (_req, res) => {
+    try {
+      // Mock data - Replace with actual earnings calendar API
+      const earnings = [
+        {
+          symbol: "MSFT",
+          name: "Microsoft Corporation",
+          date: new Date().toISOString(),
+          time: "post",
+          expectedEPS: 2.65,
+        },
+        // Add more mock earnings events
+      ];
+
+      res.json(earnings);
+    } catch (error) {
+      res.status(500).send("Error fetching earnings calendar");
+    }
+  });
+
+
   const httpServer = createServer(app);
   return httpServer;
 }
