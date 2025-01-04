@@ -22,7 +22,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, TrendingUp, Clock, DollarSign, Users, Award } from "lucide-react";
+import { Trophy, Target, TrendingUp, Clock, DollarSign, Users, Award, Camera } from "lucide-react";
 import { format } from "date-fns";
 
 type ProfileFormData = {
@@ -77,17 +77,62 @@ export function UserProfile() {
     },
   });
 
+  const updateAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch("/api/user/avatar", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+    },
+  });
+
   const { data: achievements } = useQuery({
     queryKey: ["/api/user/achievements"],
   });
 
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      updateAvatar.mutate(file);
+    }
+  };
+
   return (
     <div className="container max-w-4xl mx-auto py-8">
       <div className="mb-8 text-center">
-        <Avatar className="w-24 h-24 mx-auto mb-4">
-          <AvatarImage src={user?.avatar} />
-          <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
-        </Avatar>
+        <div className="relative inline-block">
+          <Avatar className="w-24 h-24 mx-auto mb-4">
+            <AvatarImage src={user?.avatar} />
+            <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="absolute bottom-4 right-0">
+            <Label htmlFor="avatar-upload" className="cursor-pointer">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:bg-primary/90">
+                <Camera className="h-4 w-4" />
+              </div>
+            </Label>
+            <Input 
+              id="avatar-upload" 
+              type="file" 
+              className="hidden" 
+              accept="image/*"
+              onChange={handleAvatarChange}
+            />
+          </div>
+        </div>
         <h1 className="text-3xl font-bold">{user?.username}</h1>
         <p className="text-muted-foreground">{user?.bio}</p>
       </div>

@@ -600,6 +600,34 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.post("/api/user/avatar", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      // For now, we'll use a mock implementation
+      // In a real app, you would:
+      // 1. Use multer or similar to handle file uploads
+      // 2. Process and store the image (e.g., in a CDN)
+      // 3. Update the user's avatar URL in the database
+
+      const mockAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.user.username}`;
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          avatar: mockAvatarUrl,
+        })
+        .where(eq(users.id, req.user.id))
+        .returning();
+
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).send("Error updating avatar");
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
