@@ -366,6 +366,31 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get paper trading leaderboard
+  app.get("/api/paper-trading/leaderboard", async (_req, res) => {
+    try {
+      const leaderboard = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          totalPnl: paperTradingAccounts.totalPnl,
+          winRate: users.winRate,
+          tradesCount: users.tradesCount,
+        })
+        .from(users)
+        .innerJoin(
+          paperTradingAccounts,
+          eq(users.id, paperTradingAccounts.userId)
+        )
+        .orderBy(desc(paperTradingAccounts.totalPnl))
+        .limit(10);
+
+      res.json(leaderboard);
+    } catch (error) {
+      res.status(500).send("Error fetching leaderboard data");
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

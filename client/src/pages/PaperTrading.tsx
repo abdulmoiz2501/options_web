@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { ArrowLeft, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { PaperTradingLeaderboard } from "@/components/PaperTradingLeaderboard";
 
 interface TradeForm {
   symbol: string;
@@ -117,191 +118,201 @@ export default function PaperTrading() {
           <h1 className="text-2xl font-bold">Paper Trading Simulator</h1>
         </div>
 
-        {/* Account Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Account Balance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${account?.balance.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2 space-y-6">
+            {/* Account Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Account Balance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ${account?.balance.toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Total P&L</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${account?.totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {account?.totalPnl >= 0 ? '+' : ''}${account?.totalPnl.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Total P&L</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${account?.totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {account?.totalPnl >= 0 ? '+' : ''}${account?.totalPnl.toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Daily P&L</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${account?.dailyPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {account?.dailyPnl >= 0 ? '+' : ''}${account?.dailyPnl.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Daily P&L</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${account?.dailyPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {account?.dailyPnl >= 0 ? '+' : ''}${account?.dailyPnl.toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Trade Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>New Trade</CardTitle>
-              <CardDescription>
-                Open a new paper trading position
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="symbol"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Symbol</FormLabel>
-                        <FormControl>
-                          <Input placeholder="AAPL" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+            {/* Trade Form and Positions */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Trade Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>New Trade</CardTitle>
+                  <CardDescription>
+                    Open a new paper trading position
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="symbol"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Symbol</FormLabel>
+                            <FormControl>
+                              <Input placeholder="AAPL" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Amount ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="amount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Amount ($)</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Option Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select option type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="call">Call</SelectItem>
-                            <SelectItem value="put">Put</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Option Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select option type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="call">Call</SelectItem>
+                                <SelectItem value="put">Put</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="expiry"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Expiry Date</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="expiry"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Expiry Date</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="strike"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Strike Price</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="strike"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Strike Price</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
-                  <Button type="submit" className="w-full">
-                    {tradeMutation.isPending ? (
-                      <div className="flex items-center gap-2">
-                        <span className="animate-spin">↻</span> 
-                        Processing...
-                      </div>
-                    ) : (
-                      "Place Trade"
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                      <Button type="submit" className="w-full">
+                        {tradeMutation.isPending ? (
+                          <div className="flex items-center gap-2">
+                            <span className="animate-spin">↻</span>
+                            Processing...
+                          </div>
+                        ) : (
+                          "Place Trade"
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
 
-          {/* Open Positions */}
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Open Positions</CardTitle>
-                <CardDescription>
-                  Your active paper trading positions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {positions?.map((pos) => (
-                    <div
-                      key={pos.id}
-                      className="flex items-center justify-between p-4 rounded-lg border"
-                    >
-                      <div>
-                        <div className="font-medium">{pos.symbol}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {pos.optionType.toUpperCase()} ${pos.strikePrice} {new Date(pos.expiryDate).toLocaleDateString()}
+              {/* Open Positions */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Open Positions</CardTitle>
+                    <CardDescription>
+                      Your active paper trading positions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {positions?.map((pos) => (
+                        <div
+                          key={pos.id}
+                          className="flex items-center justify-between p-4 rounded-lg border"
+                        >
+                          <div>
+                            <div className="font-medium">{pos.symbol}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {pos.optionType.toUpperCase()} ${pos.strikePrice} {new Date(pos.expiryDate).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`font-medium ${pos.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {pos.pnl >= 0 ? <TrendingUp className="inline h-4 w-4 mr-1" /> : <TrendingDown className="inline h-4 w-4 mr-1" />}
+                              ${Math.abs(pos.pnl).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Risk: {pos.riskLevel}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`font-medium ${pos.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {pos.pnl >= 0 ? <TrendingUp className="inline h-4 w-4 mr-1" /> : <TrendingDown className="inline h-4 w-4 mr-1" />}
-                          ${Math.abs(pos.pnl).toLocaleString()}
+                      ))}
+
+                      {positions?.length === 0 && (
+                        <div className="text-center text-muted-foreground py-8">
+                          No open positions
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          Risk: {pos.riskLevel}
-                        </div>
-                      </div>
+                      )}
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
 
-                  {positions?.length === 0 && (
-                    <div className="text-center text-muted-foreground py-8">
-                      No open positions
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                {riskAssessment && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{riskAssessment}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </div>
+          </div>
 
-            {riskAssessment && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{riskAssessment}</AlertDescription>
-              </Alert>
-            )}
+          {/* Leaderboard */}
+          <div className="md:col-span-1">
+            <PaperTradingLeaderboard />
           </div>
         </div>
       </div>
