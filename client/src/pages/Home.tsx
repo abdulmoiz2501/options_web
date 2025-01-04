@@ -6,7 +6,7 @@ import { SocialFeed } from "@/components/SocialFeed";
 import { MarketData } from "@/components/MarketData";
 import { Leaderboard } from "@/components/Leaderboard";
 import { Link } from "wouter";
-import { BarChart2, LineChart, Newspaper, LogOut, Search } from "lucide-react";
+import { BarChart2, LineChart, Newspaper, LogOut, Search, User } from "lucide-react";
 import {
   Command,
   CommandDialog,
@@ -72,6 +72,12 @@ export default function Home() {
               <Button variant="outline">
                 <Newspaper className="h-4 w-4 mr-2" />
                 Markets
+              </Button>
+            </Link>
+            <Link href="/profile">
+              <Button variant="outline">
+                <User className="h-4 w-4 mr-2" />
+                Profile
               </Button>
             </Link>
             <Button variant="outline" onClick={() => logout()}>
