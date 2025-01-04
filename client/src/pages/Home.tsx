@@ -1,7 +1,7 @@
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { OptionsFlow } from "@/components/OptionsFlow";
-import { StockChart } from "@/components/StockChart";
+import { TrendingStocks } from "@/components/TrendingStocks";
 import { SocialFeed } from "@/components/SocialFeed";
 import { MarketData } from "@/components/MarketData";
 import { Leaderboard } from "@/components/Leaderboard";
@@ -30,7 +30,7 @@ export default function Home() {
           <MarketData />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-8">
-              <StockChart />
+              <TrendingStocks />
               <OptionsFlow />
             </div>
             <div className="lg:col-span-4 space-y-8">
