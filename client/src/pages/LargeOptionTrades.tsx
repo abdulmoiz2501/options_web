@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LargeOptionTrade {
   id: string;
@@ -40,61 +41,89 @@ export default function LargeOptionTrades() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold">Large Options Trades</h1>
+            <h1 className="text-2xl font-bold">Options Data</h1>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Premium Trades ($100k+)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Symbol</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Strike</TableHead>
-                    <TableHead>Expiry</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Premium</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {trades?.map((trade) => (
-                    <TableRow key={trade.id}>
-                      <TableCell>
-                        {format(new Date(trade.timestamp), "HH:mm:ss")}
-                      </TableCell>
-                      <TableCell className="font-medium">{trade.ticker}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={trade.contract_type === "call" ? "default" : "destructive"}
-                        >
-                          {trade.contract_type.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>${trade.strike_price}</TableCell>
-                      <TableCell>
-                        {format(new Date(trade.expiration_date), "MM/dd/yyyy")}
-                      </TableCell>
-                      <TableCell>{trade.size.toLocaleString()}</TableCell>
-                      <TableCell>
-                        ${(trade.premium / 1000).toFixed(1)}K
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="flow" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="flow">Flow Feed</TabsTrigger>
+            <TabsTrigger value="scalps">Scalps</TabsTrigger>
+            <TabsTrigger value="unusual">Unusual</TabsTrigger>
+            <TabsTrigger value="golden">Golden Sweeps</TabsTrigger>
+            <TabsTrigger value="frc">FRC AI Sweeps</TabsTrigger>
+            <TabsTrigger value="premium">Premium ($100K+)</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="flow">
+            <Card>
+              <CardHeader>
+                <CardTitle>Flow Feed</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Symbol</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Strike</TableHead>
+                        <TableHead>Expiry</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>Premium</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {trades?.map((trade) => (
+                        <TableRow key={trade.id}>
+                          <TableCell>
+                            {format(new Date(trade.timestamp), "HH:mm:ss")}
+                          </TableCell>
+                          <TableCell className="font-medium">{trade.ticker}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={trade.contract_type === "call" ? "default" : "destructive"}
+                            >
+                              {trade.contract_type.toUpperCase()}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>${trade.strike_price}</TableCell>
+                          <TableCell>
+                            {format(new Date(trade.expiration_date), "MM/dd/yyyy")}
+                          </TableCell>
+                          <TableCell>{trade.size.toLocaleString()}</TableCell>
+                          <TableCell>
+                            ${(trade.premium / 1000).toFixed(1)}K
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {['scalps', 'unusual', 'golden', 'frc', 'premium'].map((tab) => (
+            <TabsContent key={tab} value={tab}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="capitalize">{tab}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-center py-8 text-muted-foreground">
+                    Coming soon...
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );
