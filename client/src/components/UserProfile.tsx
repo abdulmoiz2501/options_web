@@ -25,6 +25,13 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, TrendingUp, Clock, DollarSign, Users, Award, Camera } from "lucide-react";
 import { format } from "date-fns";
 
+type Achievement = {
+  id: number;
+  name: string;
+  description: string;
+  unlockedAt: string;
+};
+
 type ProfileFormData = {
   fullName: string;
   bio: string;
@@ -55,6 +62,10 @@ export function UserProfile() {
       dailyProfitTarget: Number(user?.dailyProfitTarget) || 0,
       maxDrawdown: Number(user?.maxDrawdown) || 0,
     },
+  });
+
+  const { data: achievements } = useQuery<Achievement[]>({
+    queryKey: ["/api/user/achievements"],
   });
 
   const updateProfile = useMutation({
@@ -99,10 +110,6 @@ export function UserProfile() {
     },
   });
 
-  const { data: achievements } = useQuery({
-    queryKey: ["/api/user/achievements"],
-  });
-
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -115,7 +122,7 @@ export function UserProfile() {
       <div className="mb-8 text-center">
         <div className="relative inline-block">
           <Avatar className="w-24 h-24 mx-auto mb-4">
-            <AvatarImage src={user?.avatar} />
+            <AvatarImage src={user?.avatar || undefined} />
             <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="absolute bottom-4 right-0">
@@ -252,7 +259,7 @@ export function UserProfile() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-                {achievements?.map((achievement: any) => (
+                {achievements?.map((achievement: Achievement) => (
                   <div
                     key={achievement.id}
                     className="p-4 border rounded-lg text-center space-y-2"
