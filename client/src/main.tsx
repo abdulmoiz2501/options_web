@@ -6,11 +6,13 @@ import { Toaster } from "@/components/ui/toaster";
 import App from './App';
 import "./index.css";
 
-createRoot(document.getElementById("root")!).render(
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
       <Toaster />
     </QueryClientProvider>
-  </StrictMode>,
+  </StrictMode>
 );
