@@ -1,8 +1,24 @@
+
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config();
+//dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+console.log('DATABASE_URL:', process.env.DATABASE_URL);
+console.log('Database URL:', process.env.DATABASE_URL);
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+
+
 const app = express();
+
+
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
