@@ -59,7 +59,7 @@ export default function Home() {
             <Link href="/large-options">
               <Button variant="outline">
                 <LineChart className="h-4 w-4 mr-2" />
-                Options Data
+                Options Datas
               </Button>
             </Link>
             <Link href="/paper-trading">

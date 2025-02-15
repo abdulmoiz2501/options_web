@@ -15,21 +15,79 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface LargeOptionTrade {
-  id: string;
+interface OptionContract {
   ticker: string;
+  underlying_ticker: string;
   strike_price: number;
   expiration_date: string;
-  premium: number;
-  contract_type: 'call' | 'put';
-  size: number;
-  timestamp: string;
+  contract_type: "call" | "put";
+  shares_per_contract: number;
 }
 
+const STOCK_SYMBOLS = [
+  "AAPL", "TSLA", "MSFT", "GOOGL", "NVDA",
+  "AMZN", "FB", "BRK.B", "V", "JNJ",
+  "JPM", "UNH", "MA", "PG", "DIS"
+];
+
 export default function LargeOptionTrades() {
-  const { data: trades, isLoading } = useQuery<LargeOptionTrade[]>({
-    queryKey: ["/api/large-options"],
+  const { data: contracts, isLoading, error } = useQuery<OptionContract[]>({
+    queryKey: ["options-contracts"],
+    queryFn: async () => {
+      try {
+        console.log("Fetching data for stock symbols:", STOCK_SYMBOLS);
+
+        const responses = await Promise.all(
+          STOCK_SYMBOLS.map(async (symbol) => {
+            const url = `https://api.polygon.io/v3/reference/options/contracts?underlying_ticker=${symbol}&limit=20&apiKey=qBSnUkjN2be9SZeJTFID7Q_2q5LdJBD0`;
+            console.log(`Fetching data for symbol: ${symbol} -> ${url}`);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              console.error(`Error fetching data for ${symbol}:`, response.status, response.statusText);
+              return []; // Return an empty array for failed requests
+            }
+
+            const data = await response.json();
+            console.log(`Response for ${symbol}:`, data);
+
+            return data.results || [];
+          })
+        );
+
+        const allContracts = responses.flat();
+        console.log("Combined contracts data:", allContracts);
+
+        return allContracts;
+      } catch (err) {
+        console.error("Error during fetching options contracts:", err);
+        return []; // Return empty array on total failure
+      }
+    },
   });
+
+  // Filtering logic
+ // Filtering logic - Adjusted to fit the data
+const scalps = contracts?.filter(
+  (contract) => contract.strike_price < 100 && contract.contract_type === "call"
+);
+
+const unusual = contracts?.filter(
+  (contract) => contract.strike_price > 200 && contract.contract_type === "put"
+);
+
+const goldenSweeps = contracts?.filter(
+  (contract) =>
+    contract.contract_type === "call" &&
+    contract.strike_price > 500 // Adjusting since shares_per_contract is always 100
+);
+
+// Debug logs to check filtered data
+console.log("Scalps Data:", scalps);
+console.log("Unusual Data:", unusual);
+console.log("Golden Sweeps Data:", goldenSweeps);
+
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -55,61 +113,28 @@ export default function LargeOptionTrades() {
             <TabsTrigger value="premium">Premium ($100K+)</TabsTrigger>
           </TabsList>
 
+          {/* Flow Feed */}
           <TabsContent value="flow">
-            <Card>
-              <CardHeader>
-                <CardTitle>Flow Feed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Symbol</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Strike</TableHead>
-                        <TableHead>Expiry</TableHead>
-                        <TableHead>Size</TableHead>
-                        <TableHead>Premium</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {trades?.map((trade) => (
-                        <TableRow key={trade.id}>
-                          <TableCell>
-                            {format(new Date(trade.timestamp), "HH:mm:ss")}
-                          </TableCell>
-                          <TableCell className="font-medium">{trade.ticker}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={trade.contract_type === "call" ? "default" : "destructive"}
-                            >
-                              {trade.contract_type.toUpperCase()}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>${trade.strike_price}</TableCell>
-                          <TableCell>
-                            {format(new Date(trade.expiration_date), "MM/dd/yyyy")}
-                          </TableCell>
-                          <TableCell>{trade.size.toLocaleString()}</TableCell>
-                          <TableCell>
-                            ${(trade.premium / 1000).toFixed(1)}K
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+            <OptionTable data={contracts} isLoading={isLoading} error={error} title="Flow Feed" />
           </TabsContent>
 
-          {['scalps', 'unusual', 'golden', 'frc', 'premium'].map((tab) => (
+          {/* Scalps */}
+          <TabsContent value="scalps">
+            <OptionTable data={scalps} isLoading={isLoading} error={error} title="Scalps" />
+          </TabsContent>
+
+          {/* Unusual */}
+          <TabsContent value="unusual">
+            <OptionTable data={unusual} isLoading={isLoading} error={error} title="Unusual Trades" />
+          </TabsContent>
+
+          {/* Golden Sweeps */}
+          <TabsContent value="golden">
+            <OptionTable data={goldenSweeps} isLoading={isLoading} error={error} title="Golden Sweeps" />
+          </TabsContent>
+
+          {/* Other Tabs Coming Soon */}
+          {["frc", "premium"].map((tab) => (
             <TabsContent key={tab} value={tab}>
               <Card>
                 <CardHeader>
@@ -126,5 +151,54 @@ export default function LargeOptionTrades() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+// Reusable Table Component
+function OptionTable({ data, isLoading, error, title }: any) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="flex justify-center py-8 text-red-500">Error fetching data.</div>
+        ) : data && data.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Symbol</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Strike</TableHead>
+                <TableHead>Expiry</TableHead>
+                <TableHead>Shares/Contract</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((contract: OptionContract) => (
+                <TableRow key={contract.ticker}>
+                  <TableCell className="font-medium">{contract.underlying_ticker}</TableCell>
+                  <TableCell>
+                    <Badge variant={contract.contract_type === "call" ? "default" : "destructive"}>
+                      {contract.contract_type.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>${contract.strike_price}</TableCell>
+                  <TableCell>{format(new Date(contract.expiration_date), "MM/dd/yyyy")}</TableCell>
+                  <TableCell>{contract.shares_per_contract}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="flex justify-center py-8">No data available.</div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
